@@ -18,11 +18,11 @@ struct AwsCredsResponse {
 
 #[derive(StructOpt, Debug)]
 struct Options {
-    // Prefix the output with "[default]"?
+    /// Prefix the output with "[default]"
     #[structopt(short, long)]
     default_header: bool,
 
-    // Write to ~/.aws/credentials directly
+    /// Write to ~/.aws/credentials directly
     #[structopt(short, long)]
     write: bool,
 }
