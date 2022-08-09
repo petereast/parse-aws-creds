@@ -20,7 +20,7 @@ struct AwsCredsResponse {
 struct Options {
     // Prefix the output with "[default]"?
     #[structopt(short, long)]
-    defaultHeader: bool,
+    default_header: bool,
 
     // Write to ~/.aws/credentials directly
     #[structopt(short, long)]
@@ -41,7 +41,7 @@ fn generate_structure(input: &AwsCredsResponse) -> Option<String> {
 
 fn get_writer(is_file: bool) -> Box<dyn Write> {
     if is_file {
-        let user_dirs = UserDirs::new().expect("CAn't get home dir");
+        let user_dirs = UserDirs::new().expect("Can't get home dir");
         let home_dir = user_dirs.home_dir();
 
         Box::new(File::create(home_dir.join(".aws/credentials").clone()).unwrap())
@@ -57,7 +57,7 @@ fn main() -> Result<()> {
     let creds: AwsCredsWrapper = serde_json::from_reader(std::io::stdin())?;
 
     let mut output_stream = get_writer(options.write);
-    if options.defaultHeader {
+    if options.default_header {
         output_stream.write_all(b"[default]\n")?;
     }
 
