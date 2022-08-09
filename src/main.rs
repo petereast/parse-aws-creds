@@ -1,6 +1,7 @@
+use directories::UserDirs;
 use serde::Deserialize;
-use serde_json::from_reader;
-use std::io::{Result, Stdin};
+use std::fs::File;
+use std::io::{prelude::*, Result, Stdin, Write};
 use structopt::StructOpt;
 
 #[derive(Deserialize, Debug)]
@@ -38,22 +39,33 @@ fn generate_structure(input: &AwsCredsResponse) -> Option<String> {
     )
 }
 
+fn get_writer(is_file: bool) -> Box<dyn Write> {
+    if is_file {
+        let user_dirs = UserDirs::new().expect("CAn't get home dir");
+        let home_dir = user_dirs.home_dir();
+
+        Box::new(File::create(home_dir.join(".aws/credentials").clone()).unwrap())
+    } else {
+        Box::new(std::io::stdout())
+    }
+}
+
 fn main() -> Result<()> {
     let options = Options::from_args();
 
-    if options.write {
-        panic!("Go and implement this you dick.");
-    }
     // Read stdin
     let creds: AwsCredsWrapper = serde_json::from_reader(std::io::stdin())?;
 
-    let output = generate_structure(&creds.Credentials);
-    let header = "[default]";
-
+    let mut output_stream = get_writer(options.write);
     if options.defaultHeader {
-        println!("[default]");
+        output_stream.write_all(b"[default]\n")?;
     }
-    println!("{}", output.unwrap());
+
+    output_stream.write_all(
+        generate_structure(&creds.Credentials)
+            .expect("Can't generate creds")
+            .as_bytes(),
+    )?;
 
     Ok(())
 }
